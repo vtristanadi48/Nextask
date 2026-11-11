@@ -7,3 +7,194 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+.onboarding-page {
+    min-height: 100vh;
+    background: #f7f8fa;
+    color: #20252b;
+}
+
+.onboarding-shell {
+    width: min(100%, 430px);
+    min-height: 100vh;
+    margin-inline: auto;
+    padding: 24px 24px max(56px, 12vh);
+    display: flex;
+    flex-direction: column;
+}
+
+.onboarding-brand {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    color: #104c91;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.onboarding-brand-mark {
+    width: 25px;
+    height: 25px;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    background: #1762d1;
+    color: white;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.onboarding-intro {
+    margin-top: 27px;
+    text-align: center;
+}
+
+.onboarding-intro h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 650;
+    letter-spacing: -0.035em;
+}
+
+.onboarding-intro p {
+    max-width: 290px;
+    margin: 7px auto 0;
+    color: #626a73;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.onboarding-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 22px;
+}
+
+.onboarding-legend {
+    margin-bottom: 10px;
+    color: #777e87;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.onboarding-roles {
+    display: grid;
+    gap: 14px;
+    width: min(100%, 280px);
+    margin-inline: auto;
+}
+
+.onboarding-roles label {
+    position: relative;
+}
+
+.onboarding-role-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+.onboarding-role-card {
+    min-height: 58px;
+    padding: 9px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #d5d9de;
+    border-radius: 9px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.onboarding-role-input:checked + .onboarding-role-card {
+    border-color: #1762d1;
+    box-shadow: 0 0 0 2px rgb(23 98 209 / 12%);
+}
+
+.onboarding-role-input:focus-visible + .onboarding-role-card {
+    outline: 3px solid rgb(23 98 209 / 35%);
+    outline-offset: 3px;
+}
+
+.onboarding-role-icon {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 7px;
+    background: #eef1f4;
+    color: #104c91;
+}
+
+.onboarding-role-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.onboarding-role-copy {
+    display: grid;
+    gap: 2px;
+}
+
+.onboarding-role-copy strong {
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.onboarding-role-copy small {
+    color: #626a73;
+    font-size: 10px;
+}
+
+.onboarding-submit {
+    min-height: 44px;
+    width: 100%;
+    margin-top: auto;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 8px;
+    background: #0756b5;
+    box-shadow: 0 4px 8px rgb(7 86 181 / 20%);
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease, opacity 150ms ease;
+}
+
+.onboarding-submit:hover:not(:disabled) {
+    background: #06499a;
+}
+
+.onboarding-submit:focus-visible {
+    outline: 3px solid rgb(7 86 181 / 35%);
+    outline-offset: 3px;
+}
+
+.onboarding-submit:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
