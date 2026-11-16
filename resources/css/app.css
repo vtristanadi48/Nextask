@@ -10,84 +10,195 @@
 
 .onboarding-page {
     min-height: 100vh;
-    background: #f7f8fa;
-    color: #20252b;
+    padding: 32px;
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(ellipse at 10% 100%, rgb(126 224 192 / 14%), transparent 34%),
+        #f5f8fc;
+    color: #202b3b;
 }
 
-.onboarding-shell {
-    width: min(100%, 430px);
-    min-height: 100vh;
-    margin-inline: auto;
-    padding: 24px 24px max(56px, 12vh);
+.onboarding-layout {
+    width: min(100%, 1080px);
+    min-height: 650px;
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    overflow: hidden;
+    border: 1px solid #e6ebf2;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgb(25 52 89 / 12%);
+}
+
+.onboarding-brand-panel {
+    position: relative;
+    min-height: 650px;
+    padding: 42px;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    background: linear-gradient(145deg, #0d4c9f 0%, #0b3e84 54%, #082f68 100%);
+    color: #fff;
 }
 
-.onboarding-brand {
-    display: flex;
-    justify-content: center;
+.onboarding-brand,
+.onboarding-mobile-brand {
+    width: fit-content;
+    display: inline-flex;
     align-items: center;
-    gap: 7px;
-    color: #104c91;
+    gap: 10px;
+    color: inherit;
+    font-size: 19px;
     font-weight: 700;
-    font-size: 16px;
+    text-decoration: none;
 }
 
 .onboarding-brand-mark {
-    width: 25px;
-    height: 25px;
+    width: 36px;
+    height: 36px;
     display: grid;
     place-items: center;
-    border-radius: 6px;
-    background: #1762d1;
-    color: white;
-    font-size: 19px;
-    font-weight: 700;
+    border-radius: 10px;
+    background: #fff;
+    color: #1558ad;
+    font-size: 25px;
+    font-weight: 750;
     line-height: 1;
 }
 
-.onboarding-intro {
-    margin-top: 27px;
-    text-align: center;
+.onboarding-brand-message {
+    z-index: 1;
+    max-width: 390px;
+    margin-block: auto;
+    padding-block: 70px;
 }
 
-.onboarding-intro h1 {
-    margin: 0;
-    font-size: 20px;
+.onboarding-eyebrow {
+    margin: 0 0 15px;
+    color: #c5dcff;
+    font-size: 12px;
     font-weight: 650;
-    letter-spacing: -0.035em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
-.onboarding-intro p {
-    max-width: 290px;
-    margin: 7px auto 0;
-    color: #626a73;
-    font-size: 13px;
-    line-height: 1.55;
+.onboarding-brand-message h1 {
+    max-width: 350px;
+    margin: 0;
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 650;
+    letter-spacing: -0.045em;
+    line-height: 1.12;
+}
+
+.onboarding-brand-message > p:last-child {
+    max-width: 350px;
+    margin: 18px 0 0;
+    color: #d3e2f8;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.onboarding-decoration {
+    position: absolute;
+    right: -88px;
+    bottom: 76px;
+    width: 360px;
+    height: 210px;
+    opacity: 0.2;
+    transform: rotate(-24deg);
+}
+
+.onboarding-decoration span {
+    position: absolute;
+    inset: 0;
+    border: 1px solid #b5d5ff;
+    border-radius: 48px;
+}
+
+.onboarding-decoration span:nth-child(2) {
+    inset: 26px 26px;
+}
+
+.onboarding-decoration span:nth-child(3) {
+    inset: 52px 52px;
+}
+
+.onboarding-brand-footer {
+    z-index: 1;
+    margin: 0;
+    color: #c5dcff;
+    font-size: 12px;
+}
+
+.onboarding-form-panel {
+    padding: 64px clamp(36px, 7vw, 88px);
+    display: grid;
+    align-items: center;
+}
+
+.onboarding-form-content {
+    width: min(100%, 390px);
+    margin-inline: auto;
+}
+
+.onboarding-mobile-brand {
+    display: none;
+}
+
+.onboarding-role-badge {
+    width: fit-content;
+    margin-bottom: 16px;
+    padding: 7px 11px;
+    display: inline-flex;
+    border: 1px solid #dce9fb;
+    border-radius: 999px;
+    background: #f2f7ff;
+    color: #1857a4;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.onboarding-form-content h2 {
+    margin: 0;
+    color: #182437;
+    font-size: clamp(26px, 3vw, 34px);
+    font-weight: 650;
+    letter-spacing: -0.04em;
+    line-height: 1.2;
+}
+
+.onboarding-description {
+    margin: 10px 0 0;
+    color: #758196;
+    font-size: 14px;
+    line-height: 1.6;
 }
 
 .onboarding-form {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-top: 22px;
+    margin-top: 32px;
+    display: grid;
+    gap: 19px;
+}
+
+.onboarding-fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
 }
 
 .onboarding-legend {
-    margin-bottom: 10px;
-    color: #777e87;
-    font-size: 10px;
+    margin-bottom: 11px;
+    color: #344158;
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-align: center;
-    text-transform: uppercase;
 }
 
 .onboarding-roles {
     display: grid;
-    gap: 14px;
-    width: min(100%, 280px);
-    margin-inline: auto;
+    gap: 12px;
 }
 
 .onboarding-roles label {
@@ -105,42 +216,43 @@
 }
 
 .onboarding-role-card {
-    min-height: 58px;
-    padding: 9px;
+    min-height: 76px;
+    padding: 14px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    border: 1px solid #d5d9de;
-    border-radius: 9px;
-    background: #fff;
+    gap: 12px;
+    border: 1px solid #d8e0ea;
+    border-radius: 8px;
+    background: #fbfcfe;
     cursor: pointer;
     transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
 }
 
 .onboarding-role-input:checked + .onboarding-role-card {
-    border-color: #1762d1;
-    box-shadow: 0 0 0 2px rgb(23 98 209 / 12%);
+    border-color: #3478ce;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgb(52 120 206 / 14%);
 }
 
 .onboarding-role-input:focus-visible + .onboarding-role-card {
-    outline: 3px solid rgb(23 98 209 / 35%);
+    outline: 3px solid rgb(52 120 206 / 35%);
     outline-offset: 3px;
 }
 
 .onboarding-role-icon {
-    width: 34px;
-    height: 34px;
+    width: 42px;
+    height: 42px;
     flex: none;
     display: grid;
     place-items: center;
-    border-radius: 7px;
-    background: #eef1f4;
-    color: #104c91;
+    border-radius: 9px;
+    background: #f2f7ff;
+    color: #1857a4;
 }
 
 .onboarding-role-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 21px;
+    height: 21px;
 }
 
 .onboarding-role-copy {
@@ -150,44 +262,131 @@
 
 .onboarding-role-copy strong {
     font-size: 14px;
-    font-weight: 650;
+    font-weight: 600;
     line-height: 1.2;
 }
 
 .onboarding-role-copy small {
-    color: #626a73;
-    font-size: 10px;
+    color: #758196;
+    font-size: 12px;
 }
 
 .onboarding-submit {
-    min-height: 44px;
+    min-height: 48px;
     width: 100%;
-    margin-top: auto;
-    padding: 10px 16px;
+    margin-top: 5px;
+    padding: 12px 18px;
     border: 0;
     border-radius: 8px;
-    background: #0756b5;
-    box-shadow: 0 4px 8px rgb(7 86 181 / 20%);
+    background: #0c54ae;
+    box-shadow: 0 6px 12px rgb(12 84 174 / 18%);
     color: #fff;
     font: inherit;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 650;
     cursor: pointer;
     transition: background 150ms ease, opacity 150ms ease;
 }
 
 .onboarding-submit:hover:not(:disabled) {
-    background: #06499a;
+    background: #09458f;
 }
 
 .onboarding-submit:focus-visible {
-    outline: 3px solid rgb(7 86 181 / 35%);
+    outline: 3px solid rgb(52 120 206 / 35%);
     outline-offset: 3px;
 }
 
 .onboarding-submit:disabled {
     cursor: not-allowed;
     opacity: 0.55;
+}
+
+@media (max-width: 760px) {
+    .onboarding-page {
+        padding: 20px;
+    }
+
+    .onboarding-layout {
+        width: min(100%, 480px);
+        min-height: auto;
+        grid-template-columns: 1fr;
+        border-radius: 16px;
+    }
+
+    .onboarding-brand-panel {
+        min-height: auto;
+        padding: 26px 28px;
+    }
+
+    .onboarding-brand-panel > .onboarding-brand,
+    .onboarding-brand-footer,
+    .onboarding-decoration {
+        display: none;
+    }
+
+    .onboarding-brand-message {
+        margin: 0;
+        padding: 0;
+    }
+
+    .onboarding-eyebrow {
+        margin-bottom: 9px;
+        font-size: 10px;
+    }
+
+    .onboarding-brand-message h1 {
+        max-width: 330px;
+        font-size: 26px;
+    }
+
+    .onboarding-brand-message > p:last-child {
+        margin-top: 9px;
+        font-size: 13px;
+    }
+
+    .onboarding-form-panel {
+        padding: 32px 28px 30px;
+    }
+
+    .onboarding-mobile-brand {
+        margin-bottom: 27px;
+        display: inline-flex;
+        color: #104c91;
+        font-size: 16px;
+    }
+
+    .onboarding-mobile-brand .onboarding-brand-mark {
+        width: 29px;
+        height: 29px;
+        border-radius: 8px;
+        background: #1762d1;
+        color: #fff;
+        font-size: 20px;
+    }
+
+    .onboarding-form-content h2 {
+        font-size: 28px;
+    }
+
+    .onboarding-form {
+        margin-top: 26px;
+        gap: 17px;
+    }
+}
+
+@media (max-width: 380px) {
+    .onboarding-page {
+        padding: 12px;
+    }
+
+    .onboarding-brand-panel {
+        padding: 22px;
+    }
+
+    .onboarding-form-panel {
+        padding: 26px 22px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
