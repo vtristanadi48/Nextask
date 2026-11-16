@@ -11,7 +11,7 @@
         <main class="onboarding-layout">
             <section class="onboarding-brand-panel" aria-label="Tentang Nextask">
                 <a class="onboarding-brand" href="{{ route('onboarding') }}" aria-label="Nextask, pilih peran">
-                    <span class="onboarding-brand-mark" aria-hidden="true">N</span>
+                    <img class="onboarding-brand-logo" src="{{ asset('images/brand/logo-teks-kanan.svg') }}" alt="">
                     <span>Nextask</span>
                 </a>
 
@@ -32,7 +32,9 @@
             <section class="onboarding-form-panel" aria-labelledby="onboarding-title">
                 <div class="onboarding-form-content">
                     <a class="onboarding-mobile-brand" href="{{ route('onboarding') }}" aria-label="Nextask, pilih peran">
-                        <span class="onboarding-brand-mark" aria-hidden="true">N</span>
+                        <span class="onboarding-mobile-mark" aria-hidden="true">
+                            <img src="{{ asset('images/brand/logo.svg') }}" alt="">
+                        </span>
                         <span>Nextask</span>
                     </a>
 

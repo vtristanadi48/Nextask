@@ -11,7 +11,7 @@
         <main class="login-layout">
             <section class="login-brand-panel" aria-label="Tentang Nextask">
                 <a class="login-brand" href="{{ route('onboarding') }}" aria-label="Nextask, pilih peran">
-                    <span class="login-brand-mark" aria-hidden="true">N</span>
+                    <img class="login-brand-logo" src="{{ asset('images/brand/logo-teks-kanan.svg') }}" alt="">
                     <span>Nextask</span>
                 </a>
 
@@ -32,7 +32,9 @@
             <section class="login-form-panel" aria-labelledby="login-title">
                 <div class="login-form-content">
                     <a class="login-mobile-brand" href="{{ route('onboarding') }}" aria-label="Nextask, pilih peran">
-                        <span class="login-brand-mark" aria-hidden="true">N</span>
+                        <span class="login-mobile-mark" aria-hidden="true">
+                            <img src="{{ asset('images/brand/logo.svg') }}" alt="">
+                        </span>
                         <span>Nextask</span>
                     </a>
 
