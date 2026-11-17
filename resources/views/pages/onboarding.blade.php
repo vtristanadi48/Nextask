@@ -42,7 +42,7 @@
                     <h2 id="onboarding-title">Kuasai Alur Kerja Anda</h2>
                     <p class="onboarding-description">Pilih peran Anda untuk memulai menggunakan Nextask.</p>
 
-                    <form class="onboarding-form" action="/login/siswa" method="GET" data-onboarding-form>
+                    <form class="onboarding-form" action="{{ route('login') }}" method="GET" data-onboarding-form>
                         <fieldset class="onboarding-fieldset">
                             <legend class="onboarding-legend">Pilih peran Anda</legend>
                             <div class="onboarding-roles">
@@ -52,7 +52,7 @@
                                         type="radio"
                                         name="role"
                                         value="siswa"
-                                        data-login-path="/login/siswa"
+                                        required
                                     >
                                     <span class="onboarding-role-card">
                                         <span class="onboarding-role-icon" aria-hidden="true">
@@ -75,7 +75,7 @@
                                         type="radio"
                                         name="role"
                                         value="guru"
-                                        data-login-path="/login/guru"
+                                        required
                                     >
                                     <span class="onboarding-role-card">
                                         <span class="onboarding-role-icon" aria-hidden="true">
@@ -94,7 +94,10 @@
                             </div>
                         </fieldset>
 
-                        <button class="onboarding-submit" type="submit" disabled>Mulai Sekarang</button>
+                        <p class="onboarding-role-warning" role="alert" data-role-warning hidden>
+                            Pilih peran Siswa atau Guru terlebih dahulu.
+                        </p>
+                        <button class="onboarding-submit" type="submit">Mulai Sekarang</button>
                     </form>
                 </div>
             </section>

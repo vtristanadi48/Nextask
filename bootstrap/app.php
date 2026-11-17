@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\RoleMiddleware;
+use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +14,24 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->redirectGuestsTo(fn (Request $request): string => route('onboarding'));
+        $middleware->alias([
+            'role' => RoleMiddleware::class,
+        ]);
+        $middleware->redirectGuestsTo(fn (Request $request): string => route('login'));
+        $middleware->redirectUsersTo(function (Request $request): string {
+            $user = $request->user();
+
+            if (! $user instanceof User) {
+                abort(403);
+            }
+
+            return match ($user->role->name) {
+                'admin' => route('admin.dashboard'),
+                'guru' => route('guru.dashboard'),
+                'siswa' => route('siswa.dashboard'),
+                default => abort(403),
+            };
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

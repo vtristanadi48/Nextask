@@ -29,39 +29,69 @@ class ExampleTest extends TestCase
             ->assertViewIs('pages.onboarding')
             ->assertSee('Siswa')
             ->assertSee('Guru')
-            ->assertSee('data-login-path="/login/siswa"', false)
-            ->assertSee('data-login-path="/login/guru"', false);
+            ->assertSee('action="'.route('login').'"', false)
+            ->assertSee('method="GET"', false)
+            ->assertSee('name="role"', false)
+            ->assertSee('required', false)
+            ->assertSee('Pilih peran Siswa atau Guru terlebih dahulu.')
+            ->assertSee('Mulai Sekarang')
+            ->assertDontSee('disabled>Mulai Sekarang', false);
     }
 
-    public function test_a_student_can_open_the_student_login_page(): void
+    public function test_a_user_can_open_the_login_form(): void
     {
         $this->withoutVite();
 
-        $this->get('/login/siswa')
+        $this->get(route('login'))
             ->assertOk()
-            ->assertViewIs('pages.auth.login')
-            ->assertSee('Akun Siswa')
-            ->assertSee('NISN')
-            ->assertSee('name="nisn"', false)
+            ->assertViewIs('auth.login')
+            ->assertSee('Akun Guru & Admin')
+            ->assertSee('name="email"', false)
+            ->assertSee('name="remember"', false)
             ->assertSee('method="POST"', false)
-            ->assertSee('action="'.route('login.store', ['role' => 'siswa']).'"', false)
+            ->assertSee('action="'.route('login.post').'"', false)
             ->assertSee('Masuk ke Akun');
     }
 
-    public function test_a_teacher_can_open_the_teacher_login_page(): void
+    public function test_the_student_login_form_uses_a_nisn_field(): void
     {
         $this->withoutVite();
 
-        $this->get('/login/guru')
+        $this->get(route('login', ['role' => 'siswa']))
             ->assertOk()
-            ->assertViewIs('pages.auth.login')
-            ->assertSee('Akun Guru')
-            ->assertSee('Email')
-            ->assertSee('name="email"', false);
+            ->assertSee('Akun Siswa')
+            ->assertSee('Masukkan NISN dan kata sandi untuk mulai belajar dan mengerjakan tugas.')
+            ->assertSee('name="login_role" value="siswa"', false)
+            ->assertSee('name="nisn"', false)
+            ->assertSee('inputmode="numeric"', false)
+            ->assertDontSee('name="email"', false);
     }
 
-    public function test_an_unknown_login_role_is_not_available(): void
+    public function test_the_teacher_login_form_uses_an_email_field(): void
     {
-        $this->get('/login/admin')->assertNotFound();
+        $this->withoutVite();
+
+        $this->get(route('login', ['role' => 'guru']))
+            ->assertOk()
+            ->assertSee('Akun Guru & Admin')
+            ->assertSee('Masukkan email dan kata sandi untuk mengelola kelas dan tugas.')
+            ->assertSee('name="login_role" value="guru"', false)
+            ->assertSee('name="email"', false)
+            ->assertDontSee('name="nisn"', false);
+    }
+
+    public function test_an_invalid_role_query_uses_the_default_email_form(): void
+    {
+        $this->withoutVite();
+
+        $this->get('/login?role%5B%5D=siswa')
+            ->assertOk()
+            ->assertSee('name="email"', false)
+            ->assertDontSee('name="nisn"', false);
+    }
+
+    public function test_a_role_specific_login_url_is_not_available(): void
+    {
+        $this->get('/login/siswa')->assertNotFound();
     }
 }

@@ -314,6 +314,17 @@
     transition: background 150ms ease, opacity 150ms ease;
 }
 
+.onboarding-role-warning {
+    margin: -5px 0 0;
+    color: #b42318;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.onboarding-role-warning[hidden] {
+    display: none;
+}
+
 .onboarding-submit:hover:not(:disabled) {
     background: #09458f;
 }
@@ -526,6 +537,22 @@
     margin-top: 32px;
     display: grid;
     gap: 19px;
+}
+
+.login-remember {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #526176;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.login-remember input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #0c54ae;
 }
 
 .login-field {

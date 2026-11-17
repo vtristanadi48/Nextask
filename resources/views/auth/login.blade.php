@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#f5f8fc">
-        <title>Masuk sebagai {{ ucfirst($role) }} - Nextask</title>
+        <title>Masuk - Nextask</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="login-page font-sans antialiased">
@@ -38,30 +38,58 @@
                         <span>Nextask</span>
                     </a>
 
-                    <span class="login-role-badge">{{ $role === 'siswa' ? 'Akun Siswa' : 'Akun Guru' }}</span>
+                    <span class="login-role-badge">
+                        {{ $role === 'siswa'
+                            ? 'Akun Siswa'
+                            : 'Akun Guru & Admin' }}
+                    </span>
                     <h2 id="login-title">Selamat datang kembali</h2>
-                    <p class="login-form-description">Masuk ke akun Nextask Anda untuk melanjutkan.</p>
+                    <p class="login-form-description">
+                        {{ $role === 'siswa'
+                            ? 'Masukkan NISN dan kata sandi untuk mulai belajar dan mengerjakan tugas.'
+                            : 'Masukkan email dan kata sandi untuk mengelola kelas dan tugas.' }}
+                    </p>
 
-                    <form class="login-form" method="POST" action="{{ route('login.store', ['role' => $role]) }}">
+                    <form class="login-form" method="POST" action="{{ route('login.post') }}">
                         @csrf
+                        <input type="hidden" name="login_role" value="{{ $role }}">
 
-                        <label class="login-field" for="login-identifier">
-                            <span>{{ $role === 'siswa' ? 'NISN' : 'Email' }}</span>
-                            <input
-                                id="login-identifier"
-                                name="{{ $role === 'siswa' ? 'nisn' : 'email' }}"
-                                type="{{ $role === 'siswa' ? 'text' : 'email' }}"
-                                placeholder="{{ $role === 'siswa' ? 'Masukkan NISN Anda' : 'nama@sekolah.sch.id' }}"
-                                autocomplete="{{ $role === 'siswa' ? 'username' : 'email' }}"
-                                value="{{ old($role === 'siswa' ? 'nisn' : 'email') }}"
-                                @if ($role === 'siswa') inputmode="numeric" maxlength="10" @endif
-                                @if ($errors->has($role === 'siswa' ? 'nisn' : 'email')) aria-invalid="true" @endif
-                                required
-                            >
-                            @error($role === 'siswa' ? 'nisn' : 'email')
-                                <span class="login-error" role="alert">{{ $message }}</span>
-                            @enderror
-                        </label>
+                        @if ($role === 'siswa')
+                            <label class="login-field" for="login-identifier">
+                                <span>NISN</span>
+                                <input
+                                    id="login-identifier"
+                                    name="nisn"
+                                    type="text"
+                                    inputmode="numeric"
+                                    placeholder="Masukkan NISN Anda"
+                                    autocomplete="username"
+                                    value="{{ old('nisn') }}"
+                                    @if ($errors->has('nisn')) aria-invalid="true" @endif
+                                    required
+                                >
+                                @error('nisn')
+                                    <span class="login-error" role="alert">{{ $message }}</span>
+                                @enderror
+                            </label>
+                        @else
+                            <label class="login-field" for="login-identifier">
+                                <span>Email</span>
+                                <input
+                                    id="login-identifier"
+                                    name="email"
+                                    type="email"
+                                    placeholder="Masukkan email Anda"
+                                    autocomplete="username"
+                                    value="{{ old('email') }}"
+                                    @if ($errors->has('email')) aria-invalid="true" @endif
+                                    required
+                                >
+                                @error('email')
+                                    <span class="login-error" role="alert">{{ $message }}</span>
+                                @enderror
+                            </label>
+                        @endif
 
                         <label class="login-field" for="login-password">
                             <span>Kata Sandi</span>
@@ -72,6 +100,7 @@
                                     type="password"
                                     placeholder="Masukkan kata sandi"
                                     autocomplete="current-password"
+                                    @if ($errors->has('password')) aria-invalid="true" @endif
                                     required
                                 >
                                 <button
@@ -92,9 +121,10 @@
                             @enderror
                         </label>
 
-                        @error('credentials')
-                            <p class="login-error" role="alert">{{ $message }}</p>
-                        @enderror
+                        <label class="login-remember">
+                            <input type="checkbox" name="remember" value="1" @checked(old('remember'))>
+                            <span>Ingat saya</span>
+                        </label>
 
                         <button class="login-submit" type="submit">Masuk ke Akun</button>
                     </form>

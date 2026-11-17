@@ -3,23 +3,19 @@
 const onboardingForm = document.querySelector('[data-onboarding-form]');
 
 if (onboardingForm instanceof HTMLFormElement) {
-    const loginPaths = {
-        siswa: '/login/siswa',
-        guru: '/login/guru',
-    };
-
-    const submitButton = onboardingForm.querySelector('button[type="submit"]');
+    const roleWarning = onboardingForm.querySelector('[data-role-warning]');
 
     onboardingForm.querySelectorAll('input[name="role"]').forEach((roleInput) => {
-        roleInput.addEventListener('change', () => {
-            const loginPath = loginPaths[roleInput.value];
-
-            if (!loginPath || !(submitButton instanceof HTMLButtonElement)) {
-                return;
+        roleInput.addEventListener('invalid', () => {
+            if (roleWarning instanceof HTMLElement) {
+                roleWarning.hidden = false;
             }
+        });
 
-            onboardingForm.action = loginPath;
-            submitButton.disabled = false;
+        roleInput.addEventListener('change', () => {
+            if (roleWarning instanceof HTMLElement) {
+                roleWarning.hidden = true;
+            }
         });
     });
 }
