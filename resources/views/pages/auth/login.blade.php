@@ -42,7 +42,9 @@
                     <h2 id="login-title">Selamat datang kembali</h2>
                     <p class="login-form-description">Masuk ke akun Nextask Anda untuk melanjutkan.</p>
 
-                    <form class="login-form">
+                    <form class="login-form" method="POST" action="{{ route('login.store', ['role' => $role]) }}">
+                        @csrf
+
                         <label class="login-field" for="login-identifier">
                             <span>{{ $role === 'siswa' ? 'NISN' : 'Email' }}</span>
                             <input
@@ -51,9 +53,14 @@
                                 type="{{ $role === 'siswa' ? 'text' : 'email' }}"
                                 placeholder="{{ $role === 'siswa' ? 'Masukkan NISN Anda' : 'nama@sekolah.sch.id' }}"
                                 autocomplete="{{ $role === 'siswa' ? 'username' : 'email' }}"
+                                value="{{ old($role === 'siswa' ? 'nisn' : 'email') }}"
                                 @if ($role === 'siswa') inputmode="numeric" maxlength="10" @endif
+                                @if ($errors->has($role === 'siswa' ? 'nisn' : 'email')) aria-invalid="true" @endif
                                 required
                             >
+                            @error($role === 'siswa' ? 'nisn' : 'email')
+                                <span class="login-error" role="alert">{{ $message }}</span>
+                            @enderror
                         </label>
 
                         <label class="login-field" for="login-password">
@@ -80,12 +87,18 @@
                                     </svg>
                                 </button>
                             </span>
+                            @error('password')
+                                <span class="login-error" role="alert">{{ $message }}</span>
+                            @enderror
                         </label>
 
-                        <button class="login-submit" type="button" disabled>Masuk ke Akun</button>
+                        @error('credentials')
+                            <p class="login-error" role="alert">{{ $message }}</p>
+                        @enderror
+
+                        <button class="login-submit" type="submit">Masuk ke Akun</button>
                     </form>
 
-                    <p class="login-setup-note">Form login sudah disiapkan. Proses autentikasi akan dihubungkan setelah data akun tersedia.</p>
                     <p class="login-switch-role">
                         <a href="{{ route('onboarding') }}">Kembali ke pilihan peran</a>
                     </p>

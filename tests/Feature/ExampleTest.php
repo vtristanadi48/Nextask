@@ -42,7 +42,10 @@ class ExampleTest extends TestCase
             ->assertViewIs('pages.auth.login')
             ->assertSee('Akun Siswa')
             ->assertSee('NISN')
-            ->assertSee('name="nisn"', false);
+            ->assertSee('name="nisn"', false)
+            ->assertSee('method="POST"', false)
+            ->assertSee('action="'.route('login.store', ['role' => 'siswa']).'"', false)
+            ->assertSee('Masuk ke Akun');
     }
 
     public function test_a_teacher_can_open_the_teacher_login_page(): void
