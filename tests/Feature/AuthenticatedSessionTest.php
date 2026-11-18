@@ -70,6 +70,27 @@ class AuthenticatedSessionTest extends TestCase
         $this->get(route('siswa.dashboard'))->assertOk();
     }
 
+    public function test_student_dashboard_shows_an_empty_task_state_without_a_continue_action(): void
+    {
+        $this->withoutVite();
+
+        $student = User::factory()->withRole('siswa')->create();
+
+        $this->actingAs($student)
+            ->get(route('siswa.dashboard'))
+            ->assertOk()
+            ->assertSee('Belum ada tugas')
+            ->assertSee('Tugas yang diberikan guru akan muncul di sini.')
+            ->assertSee('Tugas saat ini')
+            ->assertSee('Tugas')
+            ->assertSee('Team')
+            ->assertSee('Profil')
+            ->assertSee('href="'.route('siswa.dashboard').'"', false)
+            ->assertSee('aria-current="page"', false)
+            ->assertSee('aria-disabled="true"', false)
+            ->assertDontSee('Lanjutkan Tugas');
+    }
+
     public function test_authenticated_users_are_redirected_to_their_dashboard_from_login(): void
     {
         foreach (self::roleDashboardRoutes() as [$roleName, $dashboardRoute]) {
