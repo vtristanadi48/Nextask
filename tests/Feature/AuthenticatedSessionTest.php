@@ -53,10 +53,26 @@ class AuthenticatedSessionTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $this->assertAuthenticatedAs($user);
-        $this->get(route($dashboardRoute))
+        $dashboard = $this->get(route($dashboardRoute))
             ->assertOk()
             ->assertSee($user->name)
-            ->assertSee($roleName);
+            ->assertSee($roleName)
+            ->assertSee('aria-label="Pesan masuk"', false)
+            ->assertSee('aria-label="Notifikasi sistem"', false)
+            ->assertSee('aria-label="Pengaturan"', false);
+
+        if ($roleName === 'admin') {
+            $dashboard->assertSeeInOrder([
+                'Dashboard',
+                'Administrasi Akademik',
+                'Kelas',
+                'Chat',
+                'Pusat Bantuan',
+            ]);
+        } else {
+            $dashboard->assertSeeInOrder(['Dashboard', 'Kelas', 'Chat', 'Pusat Bantuan'])
+                ->assertDontSee('Administrasi Akademik');
+        }
     }
 
     public function test_role_middleware_forbids_access_to_another_roles_dashboard(): void
@@ -82,13 +98,30 @@ class AuthenticatedSessionTest extends TestCase
             ->assertSee('Belum ada tugas')
             ->assertSee('Tugas yang diberikan guru akan muncul di sini.')
             ->assertSee('Tugas saat ini')
-            ->assertSee('Tugas')
-            ->assertSee('Team')
-            ->assertSee('Profil')
+            ->assertSeeInOrder(['Dashboard', 'Kelas', 'Chat', 'Pusat Bantuan'])
             ->assertSee('href="'.route('siswa.dashboard').'"', false)
             ->assertSee('aria-current="page"', false)
             ->assertSee('aria-disabled="true"', false)
+            ->assertDontSee('Administrasi Akademik')
+            ->assertDontSee('Team')
             ->assertDontSee('Lanjutkan Tugas');
+    }
+
+    public function test_dashboard_dropdowns_explain_features_that_are_not_available_yet(): void
+    {
+        $this->withoutVite();
+
+        $student = User::factory()->withRole('siswa')->create();
+
+        $this->actingAs($student)
+            ->get(route('siswa.dashboard'))
+            ->assertOk()
+            ->assertSee('Fitur Chat belum tersedia.')
+            ->assertSee('Tidak ada notifikasi baru.')
+            ->assertSee('Pengaturan Profil')
+            ->assertSee('Pengaturan Akun')
+            ->assertSee('Pengaturan Preferensi')
+            ->assertSee('disabled', false);
     }
 
     public function test_authenticated_users_are_redirected_to_their_dashboard_from_login(): void

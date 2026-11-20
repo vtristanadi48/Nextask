@@ -1,17 +1,9 @@
-<!DOCTYPE html>
-<html lang="id">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#f5f8fc">
-        <title>Dashboard Siswa - Nextask</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="student-dashboard-page font-sans antialiased">
-        <div class="student-dashboard-shell">
-            @include('components.dashboard-navbar', ['active' => 'home'])
+@extends('layouts.dashboard')
 
-            <main>
+@section('title', 'Dashboard Siswa - Nextask')
+
+@section('content')
+            <div class="student-dashboard-content">
                 <header class="student-dashboard-heading">
                     <p class="student-dashboard-eyebrow">Ruang belajar Anda</p>
                     <h1>Selamat datang, {{ auth()->user()->name }}</h1>
@@ -71,7 +63,5 @@
                 </section>
 
                 <p class="student-dashboard-quote">“Belajar lebih teratur, satu langkah setiap hari.”</p>
-            </main>
-        </div>
-    </body>
-</html>
+            </div>
+@endsection
