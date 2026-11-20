@@ -20,9 +20,9 @@ class AuthenticatedSessionTest extends TestCase
     public static function roleDashboardRoutes(): array
     {
         return [
-            'admin' => ['admin', 'admin.dashboard', 'guru', 'email'],
-            'guru' => ['guru', 'guru.dashboard', 'guru', 'email'],
-            'siswa' => ['siswa', 'siswa.dashboard', 'siswa', 'nisn'],
+            'admin' => ['admin', 'admin.dashboard'],
+            'guru' => ['guru', 'guru.dashboard'],
+            'siswa' => ['siswa', 'siswa.dashboard'],
         ];
     }
 
@@ -30,23 +30,13 @@ class AuthenticatedSessionTest extends TestCase
     public function test_a_user_is_redirected_to_the_dashboard_for_their_role(
         string $roleName,
         string $dashboardRoute,
-        string $loginRole,
-        string $identifierField,
     ): void {
         $user = User::factory()->withRole($roleName)->create([
             'password' => 'secret-password',
         ]);
 
-        if ($roleName === 'siswa') {
-            $user->siswaProfile()->create(['nisn' => '0012345678']);
-            $identifier = '0012345678';
-        } else {
-            $identifier = $user->email;
-        }
-
         $this->post(route('login.post'), [
-            'login_role' => $loginRole,
-            $identifierField => $identifier,
+            'email' => $user->email,
             'password' => 'secret-password',
         ])
             ->assertRedirect(route($dashboardRoute))
@@ -60,6 +50,11 @@ class AuthenticatedSessionTest extends TestCase
             ->assertSee('aria-label="Pesan masuk"', false)
             ->assertSee('aria-label="Notifikasi sistem"', false)
             ->assertSee('aria-label="Pengaturan"', false);
+
+        $this->assertSame(
+            2,
+            substr_count((string) $dashboard->getContent(), 'action="'.route('logout').'"'),
+        );
 
         if ($roleName === 'admin') {
             $dashboard->assertSeeInOrder([
@@ -141,18 +136,22 @@ class AuthenticatedSessionTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_login_rejects_invalid_credentials_and_keeps_the_identifier(): void
+    public function test_login_rejects_invalid_credentials_and_keeps_the_email(): void
     {
-        $this->from(route('login', ['role' => 'siswa']))
+        $email = 'siswa@gmail.com';
+
+        $this->from(route('login'))
             ->post(route('login.post'), [
-                'login_role' => 'siswa',
-                'nisn' => '0012345678',
+                'email' => $email,
                 'password' => 'wrong-password',
+                'remember' => '1',
             ])
-            ->assertRedirect(route('login', ['role' => 'siswa']))
-            ->assertSessionHasErrors('nisn')
-            ->assertSessionHas('_old_input.login_role', 'siswa')
-            ->assertSessionHas('_old_input.nisn', '0012345678');
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors([
+                'email' => 'Email atau kata sandi yang Anda masukkan salah.',
+            ])
+            ->assertSessionHas('_old_input.email', $email)
+            ->assertSessionHas('_old_input.remember', '1');
 
         $this->assertGuest();
     }
@@ -165,7 +164,6 @@ class AuthenticatedSessionTest extends TestCase
         ]);
 
         $this->post(route('login.post'), [
-            'login_role' => 'guru',
             'email' => $user->email,
             'password' => 'secret-password',
             'remember' => '1',
@@ -193,6 +191,22 @@ class AuthenticatedSessionTest extends TestCase
         $this->assertTrue(Schema::hasTable('roles'));
         $this->assertTrue(Schema::hasTable('guru_profiles'));
         $this->assertTrue(Schema::hasColumn('siswa_profiles', 'nisn'));
+    }
+
+    public function test_email_is_required_for_every_user(): void
+    {
+        $roleId = Role::query()->where('name', 'siswa')->value('id');
+
+        $this->expectException(QueryException::class);
+
+        DB::table('users')->insert([
+            'name' => 'Student',
+            'email' => null,
+            'password' => Hash::make('secret-password'),
+            'role_id' => $roleId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     public function test_normalization_migration_preserves_existing_student_roles_and_nisn(): void
@@ -240,23 +254,24 @@ class AuthenticatedSessionTest extends TestCase
 
         $this->assertDatabaseCount('roles', 3);
         $this->assertDatabaseCount('users', 3);
+        $this->assertDatabaseHas('users', ['email' => 'admin@gmail.com']);
+        $this->assertDatabaseHas('users', ['email' => 'guru@gmail.com']);
         $this->assertDatabaseHas('users', [
-            'email' => 'siswa@nextask.test',
+            'email' => 'siswa@gmail.com',
             'role_id' => Role::query()->where('name', 'siswa')->value('id'),
         ]);
         $this->assertDatabaseHas('siswa_profiles', [
-            'user_id' => User::query()->where('email', 'siswa@nextask.test')->value('id'),
+            'user_id' => User::query()->where('email', 'siswa@gmail.com')->value('id'),
             'nisn' => '1234567890',
         ]);
 
         $this->post(route('login.post'), [
-            'login_role' => 'siswa',
-            'nisn' => '1234567890',
+            'email' => 'siswa@gmail.com',
             'password' => 'password',
         ])->assertRedirect(route('siswa.dashboard'));
     }
 
-    public function test_a_student_cannot_log_in_with_their_email(): void
+    public function test_a_student_can_log_in_with_their_email(): void
     {
         $student = User::factory()->withRole('siswa')->create([
             'password' => 'secret-password',
@@ -264,27 +279,10 @@ class AuthenticatedSessionTest extends TestCase
         $student->siswaProfile()->create(['nisn' => '0012345678']);
 
         $this->post(route('login.post'), [
-            'login_role' => 'guru',
             'email' => $student->email,
             'password' => 'secret-password',
-        ])->assertSessionHasErrors('email');
+        ])->assertRedirect(route('siswa.dashboard'));
 
-        $this->assertGuest();
-    }
-
-    public function test_a_teacher_cannot_log_in_with_a_student_nisn(): void
-    {
-        $teacher = User::factory()->withRole('guru')->create([
-            'password' => 'secret-password',
-        ]);
-        $teacher->siswaProfile()->create(['nisn' => '0012345678']);
-
-        $this->post(route('login.post'), [
-            'login_role' => 'siswa',
-            'nisn' => '0012345678',
-            'password' => 'secret-password',
-        ])->assertSessionHasErrors('nisn');
-
-        $this->assertGuest();
+        $this->assertAuthenticatedAs($student);
     }
 }

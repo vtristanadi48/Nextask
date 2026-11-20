@@ -38,58 +38,31 @@
                         <span>Nextask</span>
                     </a>
 
-                    <span class="login-role-badge">
-                        {{ $role === 'siswa'
-                            ? 'Akun Siswa'
-                            : 'Akun Guru & Admin' }}
-                    </span>
+                    <span class="login-role-badge">Akun Nextask</span>
                     <h2 id="login-title">Selamat datang kembali</h2>
                     <p class="login-form-description">
-                        {{ $role === 'siswa'
-                            ? 'Masukkan NISN dan kata sandi untuk mulai belajar dan mengerjakan tugas.'
-                            : 'Masukkan email dan kata sandi untuk mengelola kelas dan tugas.' }}
+                        Masukkan email dan kata sandi untuk mengakses akun Nextask Anda.
                     </p>
 
                     <form class="login-form" method="POST" action="{{ route('login.post') }}">
                         @csrf
-                        <input type="hidden" name="login_role" value="{{ $role }}">
 
-                        @if ($role === 'siswa')
-                            <label class="login-field" for="login-identifier">
-                                <span>NISN</span>
-                                <input
-                                    id="login-identifier"
-                                    name="nisn"
-                                    type="text"
-                                    inputmode="numeric"
-                                    placeholder="Masukkan NISN Anda"
-                                    autocomplete="username"
-                                    value="{{ old('nisn') }}"
-                                    @if ($errors->has('nisn')) aria-invalid="true" @endif
-                                    required
-                                >
-                                @error('nisn')
-                                    <span class="login-error" role="alert">{{ $message }}</span>
-                                @enderror
-                            </label>
-                        @else
-                            <label class="login-field" for="login-identifier">
-                                <span>Email</span>
-                                <input
-                                    id="login-identifier"
-                                    name="email"
-                                    type="email"
-                                    placeholder="Masukkan email Anda"
-                                    autocomplete="username"
-                                    value="{{ old('email') }}"
-                                    @if ($errors->has('email')) aria-invalid="true" @endif
-                                    required
-                                >
-                                @error('email')
-                                    <span class="login-error" role="alert">{{ $message }}</span>
-                                @enderror
-                            </label>
-                        @endif
+                        <label class="login-field" for="login-email">
+                            <span>Email</span>
+                            <input
+                                id="login-email"
+                                name="email"
+                                type="email"
+                                placeholder="nama@gmail.com"
+                                autocomplete="username"
+                                value="{{ old('email') }}"
+                                @if ($errors->has('email')) aria-invalid="true" @endif
+                                required
+                            >
+                            @error('email')
+                                <span class="login-error" role="alert">{{ $message }}</span>
+                            @enderror
+                        </label>
 
                         <label class="login-field" for="login-password">
                             <span>Kata Sandi</span>

@@ -1147,6 +1147,8 @@
     height: calc(100vh - var(--dashboard-navbar-height));
     height: calc(100dvh - var(--dashboard-navbar-height));
     padding: 28px 16px 24px;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     overscroll-behavior: contain;
     border-right: 1px solid #e6ebf2;
@@ -1167,6 +1169,21 @@
 .dashboard-sidebar-nav {
     display: grid;
     gap: 5px;
+}
+
+.dashboard-sidebar-footer {
+    margin-top: auto;
+    padding-top: 18px;
+    border-top: 1px solid #edf1f6;
+}
+
+.dashboard-sidebar-footer form {
+    margin: 0;
+}
+
+.dashboard-sidebar-logout {
+    width: 100%;
+    justify-content: flex-start;
 }
 
 .dashboard-sidebar-link {
