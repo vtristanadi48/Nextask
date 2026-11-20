@@ -45,49 +45,42 @@ class ExampleTest extends TestCase
         $this->get(route('login'))
             ->assertOk()
             ->assertViewIs('auth.login')
-            ->assertSee('Akun Guru & Admin')
+            ->assertSee('Akun Nextask')
+            ->assertSee('Masukkan email dan kata sandi untuk mengakses akun Nextask Anda.')
             ->assertSee('name="email"', false)
+            ->assertSee('placeholder="nama@gmail.com"', false)
             ->assertSee('name="remember"', false)
             ->assertSee('method="POST"', false)
             ->assertSee('action="'.route('login.post').'"', false)
-            ->assertSee('Masuk ke Akun');
+            ->assertSee('Masuk ke Akun')
+            ->assertDontSee('name="nisn"', false)
+            ->assertDontSee('name="login_role"', false);
     }
 
-    public function test_the_student_login_form_uses_a_nisn_field(): void
+    public function test_login_form_is_the_same_for_every_selected_role(): void
     {
         $this->withoutVite();
 
-        $this->get(route('login', ['role' => 'siswa']))
-            ->assertOk()
-            ->assertSee('Akun Siswa')
-            ->assertSee('Masukkan NISN dan kata sandi untuk mulai belajar dan mengerjakan tugas.')
-            ->assertSee('name="login_role" value="siswa"', false)
-            ->assertSee('name="nisn"', false)
-            ->assertSee('inputmode="numeric"', false)
-            ->assertDontSee('name="email"', false);
+        foreach (['siswa', 'guru', 'admin'] as $role) {
+            $this->get(route('login', ['role' => $role]))
+                ->assertOk()
+                ->assertSee('Akun Nextask')
+                ->assertSee('name="email"', false)
+                ->assertDontSee('name="nisn"', false)
+                ->assertDontSee('name="login_role"', false);
+        }
     }
 
-    public function test_the_teacher_login_form_uses_an_email_field(): void
-    {
-        $this->withoutVite();
-
-        $this->get(route('login', ['role' => 'guru']))
-            ->assertOk()
-            ->assertSee('Akun Guru & Admin')
-            ->assertSee('Masukkan email dan kata sandi untuk mengelola kelas dan tugas.')
-            ->assertSee('name="login_role" value="guru"', false)
-            ->assertSee('name="email"', false)
-            ->assertDontSee('name="nisn"', false);
-    }
-
-    public function test_an_invalid_role_query_uses_the_default_email_form(): void
+    public function test_an_invalid_role_query_still_uses_the_shared_email_form(): void
     {
         $this->withoutVite();
 
         $this->get('/login?role%5B%5D=siswa')
             ->assertOk()
+            ->assertSee('Akun Nextask')
             ->assertSee('name="email"', false)
-            ->assertDontSee('name="nisn"', false);
+            ->assertDontSee('name="nisn"', false)
+            ->assertDontSee('name="login_role"', false);
     }
 
     public function test_a_role_specific_login_url_is_not_available(): void

@@ -25,9 +25,9 @@ class RoleUserSeeder extends Seeder
         }
 
         foreach ([
-            'admin' => ['name' => 'Admin Nextask', 'email' => 'admin@nextask.test'],
-            'guru' => ['name' => 'Guru Nextask', 'email' => 'guru@nextask.test'],
-            'siswa' => ['name' => 'Siswa Nextask', 'email' => 'siswa@nextask.test'],
+            'admin' => ['name' => 'Admin Nextask', 'email' => 'admin@gmail.com'],
+            'guru' => ['name' => 'Guru Nextask', 'email' => 'guru@gmail.com'],
+            'siswa' => ['name' => 'Siswa Nextask', 'email' => 'siswa@gmail.com'],
         ] as $roleName => $account) {
             $user = User::query()->updateOrCreate(
                 ['email' => $account['email']],
