@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\GuruProfile;
 use App\Models\Role;
 use App\Models\SiswaProfile;
 use App\Models\User;
@@ -42,6 +43,13 @@ class RoleUserSeeder extends Seeder
                 SiswaProfile::query()->updateOrCreate(
                     ['user_id' => $user->getKey()],
                     ['nisn' => '1234567890'],
+                );
+            }
+
+            if ($roleName === 'guru') {
+                GuruProfile::query()->updateOrCreate(
+                    ['user_id' => $user->getKey()],
+                    ['nip' => '198501012010011001'],
                 );
             }
         }

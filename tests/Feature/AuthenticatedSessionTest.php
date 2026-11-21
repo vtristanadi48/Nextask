@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Jurusan;
 use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\RoleUserSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -125,6 +127,7 @@ class AuthenticatedSessionTest extends TestCase
             ->assertSee('Tambah guru, siswa, mapel & jurusan')
             ->assertSee('Pengaturan Akademik')
             ->assertSee('Data Administrasi')
+            ->assertSee('href="'.route('admin.kelas').'"', false)
             ->assertSee('href="#"', false)
             ->assertSee('data-feature-notice="Segera hadir"', false);
     }
@@ -253,6 +256,20 @@ class AuthenticatedSessionTest extends TestCase
         $this->assertTrue(Schema::hasColumn('siswa_profiles', 'nisn'));
     }
 
+    public function test_student_profile_requires_nisn_at_the_database_level(): void
+    {
+        $student = User::factory()->withRole('siswa')->create();
+
+        $this->expectException(QueryException::class);
+
+        DB::table('siswa_profiles')->insert([
+            'user_id' => $student->getKey(),
+            'nisn' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     public function test_email_is_required_for_every_user(): void
     {
         $roleId = Role::query()->where('name', 'siswa')->value('id');
@@ -316,6 +333,10 @@ class AuthenticatedSessionTest extends TestCase
         $this->assertDatabaseCount('users', 3);
         $this->assertDatabaseHas('users', ['email' => 'admin@gmail.com']);
         $this->assertDatabaseHas('users', ['email' => 'guru@gmail.com']);
+        $this->assertDatabaseHas('guru_profiles', [
+            'user_id' => User::query()->where('email', 'guru@gmail.com')->value('id'),
+            'nip' => '198501012010011001',
+        ]);
         $this->assertDatabaseHas('users', [
             'email' => 'siswa@gmail.com',
             'role_id' => Role::query()->where('name', 'siswa')->value('id'),
@@ -329,6 +350,35 @@ class AuthenticatedSessionTest extends TestCase
             'email' => 'siswa@gmail.com',
             'password' => 'password',
         ])->assertRedirect(route('siswa.dashboard'));
+    }
+
+    public function test_database_seeder_adds_master_data_idempotently_without_overwriting_existing_rows(): void
+    {
+        Jurusan::query()->create([
+            'kode_jurusan' => 'PPLG',
+            'nama_jurusan' => 'Nama lokal yang sudah ada',
+        ]);
+
+        $this->seed(DatabaseSeeder::class);
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertDatabaseHas('jurusans', [
+            'kode_jurusan' => 'PPLG',
+            'nama_jurusan' => 'Nama lokal yang sudah ada',
+        ]);
+        $this->assertDatabaseCount('jurusans', 1);
+        $this->assertDatabaseCount('mata_pelajarans', 3);
+        $this->assertDatabaseHas('mata_pelajarans', [
+            'kode_mapel' => 'PWPB',
+            'nama_mapel' => 'Pemrograman Web dan Perangkat Bergerak',
+        ]);
+        $this->assertDatabaseCount('kelas', 1);
+        $this->assertDatabaseHas('kelas', [
+            'nama_kelas' => 'X PPLG 1',
+            'tingkat' => 'X',
+            'jurusan_id' => null,
+            'wali_kelas_id' => null,
+        ]);
     }
 
     public function test_a_student_can_log_in_with_their_email(): void

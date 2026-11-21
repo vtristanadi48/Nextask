@@ -138,14 +138,14 @@
 
                     <div class="flex flex-col gap-2">
                         @foreach ([
-                            ['title' => 'Kelola Master Data (Kelas)', 'description' => 'Tambah guru, siswa, mapel & jurusan', 'icon' => 'classes'],
-                            ['title' => 'Pengaturan Akademik', 'description' => 'Atur tahun ajaran & semester', 'icon' => 'calendar'],
-                            ['title' => 'Data Administrasi', 'description' => 'Hubungkan relasi data akademik', 'icon' => 'administration'],
+                            ['title' => 'Kelola Master Data (Kelas)', 'description' => 'Tambah guru, siswa, mapel & jurusan', 'icon' => 'classes', 'route' => 'admin.kelas'],
+                            ['title' => 'Pengaturan Akademik', 'description' => 'Atur tahun ajaran & semester', 'icon' => 'calendar', 'route' => null],
+                            ['title' => 'Data Administrasi', 'description' => 'Hubungkan relasi data akademik', 'icon' => 'administration', 'route' => null],
                         ] as $action)
                             <a
                                 class="group flex items-center gap-3 rounded-xl border border-slate-100 p-3 transition-colors hover:border-blue-100 hover:bg-blue-50/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                                href="#"
-                                data-feature-notice="Segera hadir"
+                                href="{{ $action['route'] !== null ? route($action['route']) : '#' }}"
+                                @if ($action['route'] === null) data-feature-notice="Segera hadir" @endif
                             >
                                 <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-600 transition-colors group-hover:bg-white group-hover:text-blue-700" aria-hidden="true">
                                     @switch($action['icon'])
@@ -171,7 +171,9 @@
                                     <span class="text-sm font-semibold text-slate-800">{{ $action['title'] }}</span>
                                     <span class="text-xs leading-relaxed text-slate-500">{{ $action['description'] }}</span>
                                 </span>
-                                <span class="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-500">Segera</span>
+                                @if ($action['route'] === null)
+                                    <span class="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-500">Segera</span>
+                                @endif
                             </a>
                         @endforeach
                     </div>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminKelasController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,18 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:admin')
         ->group(function () {
             Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
+            Route::get('/kelas', [AdminKelasController::class, 'index'])->name('kelas');
+            Route::post('/kelas/{tab}', [AdminKelasController::class, 'store'])
+                ->whereIn('tab', ['guru', 'siswa', 'kelas', 'jurusan', 'mapel'])
+                ->name('kelas.store');
+            Route::put('/kelas/{tab}/{id}', [AdminKelasController::class, 'update'])
+                ->whereIn('tab', ['guru', 'siswa', 'kelas', 'jurusan', 'mapel'])
+                ->whereNumber('id')
+                ->name('kelas.update');
+            Route::delete('/kelas/{tab}/{id}', [AdminKelasController::class, 'destroy'])
+                ->whereIn('tab', ['guru', 'siswa', 'kelas', 'jurusan', 'mapel'])
+                ->whereNumber('id')
+                ->name('kelas.destroy');
         });
 
     Route::prefix('guru')

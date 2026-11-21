@@ -11,7 +11,7 @@
             ['label' => 'Dashboard', 'icon' => 'dashboard', 'route' => $dashboardRoute],
             ['label' => 'Administrasi', 'icon' => 'administration', 'route' => null],
             ['label' => 'Akademik', 'icon' => 'calendar', 'route' => null],
-            ['label' => 'Kelas', 'icon' => 'classes', 'route' => null],
+            ['label' => 'Kelas', 'icon' => 'classes', 'route' => 'admin.kelas'],
             ['label' => 'Chat', 'icon' => 'chat', 'route' => null],
             ['label' => 'Pusat Bantuan', 'icon' => 'help', 'route' => null],
         ],
