@@ -19,6 +19,7 @@
                     @yield('content')
                 </main>
             </div>
+            <div class="dashboard-feature-toast" role="status" aria-live="polite" data-feature-toast hidden></div>
         </div>
     </body>
 </html>

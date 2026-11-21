@@ -20,9 +20,9 @@ class AuthenticatedSessionTest extends TestCase
     public static function roleDashboardRoutes(): array
     {
         return [
-            'admin' => ['admin', 'admin.dashboard'],
-            'guru' => ['guru', 'guru.dashboard'],
-            'siswa' => ['siswa', 'siswa.dashboard'],
+            'admin' => ['admin', 'admin.dashboard', ['Dashboard', 'Administrasi', 'Akademik', 'Kelas', 'Chat', 'Pusat Bantuan']],
+            'guru' => ['guru', 'guru.dashboard', ['Dashboard', 'Tahun Ajaran', 'Konten Mengajar', 'Chat', 'Pusat Bantuan']],
+            'siswa' => ['siswa', 'siswa.dashboard', ['Dashboard', 'Tahun Ajaran', 'Tugas', 'Chat', 'Pusat Bantuan']],
         ];
     }
 
@@ -30,6 +30,7 @@ class AuthenticatedSessionTest extends TestCase
     public function test_a_user_is_redirected_to_the_dashboard_for_their_role(
         string $roleName,
         string $dashboardRoute,
+        array $menuItems,
     ): void {
         $user = User::factory()->withRole($roleName)->create([
             'password' => 'secret-password',
@@ -56,18 +57,76 @@ class AuthenticatedSessionTest extends TestCase
             substr_count((string) $dashboard->getContent(), 'action="'.route('logout').'"'),
         );
 
-        if ($roleName === 'admin') {
-            $dashboard->assertSeeInOrder([
-                'Dashboard',
-                'Administrasi Akademik',
-                'Kelas',
-                'Chat',
-                'Pusat Bantuan',
-            ]);
-        } else {
-            $dashboard->assertSeeInOrder(['Dashboard', 'Kelas', 'Chat', 'Pusat Bantuan'])
-                ->assertDontSee('Administrasi Akademik');
-        }
+        $dashboard
+            ->assertSeeInOrder($menuItems)
+            ->assertSee('href="#"', false)
+            ->assertSee('data-feature-notice="Fitur ini sedang dalam tahap pengembangan"', false)
+            ->assertSee('data-feature-toast', false);
+    }
+
+    public function test_admin_dashboard_shows_user_counts_recent_accounts_and_safe_class_count(): void
+    {
+        $admin = User::factory()->withRole('admin')->create([
+            'name' => 'Dashboard Admin',
+            'created_at' => now()->subMinutes(30),
+        ]);
+        User::factory()->withRole('guru')->create([
+            'name' => 'Guru Terbaru',
+            'email' => 'teacher.recent@example.test',
+            'created_at' => now()->subMinutes(5),
+        ]);
+        User::factory()->withRole('guru')->create([
+            'name' => 'Guru Lama',
+            'email' => 'teacher.old@example.test',
+            'created_at' => now()->subDays(2),
+        ]);
+        User::factory()->withRole('siswa')->create([
+            'name' => 'Siswa Terbaru',
+            'email' => 'student.recent@example.test',
+            'created_at' => now()->subMinutes(2),
+        ]);
+        User::factory()->withRole('siswa')->create([
+            'name' => 'Siswa Lama',
+            'email' => 'student.old@example.test',
+            'created_at' => now()->subDays(1),
+        ]);
+        User::factory()->withRole('siswa')->create([
+            'name' => 'Siswa Tertua',
+            'email' => 'student.oldest@example.test',
+            'created_at' => now()->subDays(3),
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('totalStudents', 3)
+            ->assertViewHas('totalTeachers', 2)
+            ->assertViewHas('totalClasses', 0)
+            ->assertViewHas('totalUsers', 6)
+            ->assertSee('Pengguna Terbaru')
+            ->assertSee('Siswa Terbaru')
+            ->assertSee('student.recent@example.test')
+            ->assertSee('Guru')
+            ->assertSee('Siswa')
+            ->assertSee('Tahun Ajaran 2026/2027')
+            ->assertSee('Semester Ganjil')
+            ->assertDontSee('student.oldest@example.test');
+    }
+
+    public function test_admin_quick_actions_display_a_safe_coming_soon_notice(): void
+    {
+        $admin = User::factory()->withRole('admin')->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Kelola Master Data (Kelas)')
+            ->assertSee('Tambah guru, siswa, mapel & jurusan')
+            ->assertSee('Pengaturan Akademik')
+            ->assertSee('Data Administrasi')
+            ->assertSee('href="#"', false)
+            ->assertSee('data-feature-notice="Segera hadir"', false);
     }
 
     public function test_role_middleware_forbids_access_to_another_roles_dashboard(): void
@@ -93,11 +152,12 @@ class AuthenticatedSessionTest extends TestCase
             ->assertSee('Belum ada tugas')
             ->assertSee('Tugas yang diberikan guru akan muncul di sini.')
             ->assertSee('Tugas saat ini')
-            ->assertSeeInOrder(['Dashboard', 'Kelas', 'Chat', 'Pusat Bantuan'])
+            ->assertSeeInOrder(['Dashboard', 'Tahun Ajaran', 'Tugas', 'Chat', 'Pusat Bantuan'])
             ->assertSee('href="'.route('siswa.dashboard').'"', false)
             ->assertSee('aria-current="page"', false)
-            ->assertSee('aria-disabled="true"', false)
-            ->assertDontSee('Administrasi Akademik')
+            ->assertSee('data-feature-notice="Fitur ini sedang dalam tahap pengembangan"', false)
+            ->assertSee('href="#"', false)
+            ->assertDontSee('Administrasi')
             ->assertDontSee('Team')
             ->assertDontSee('Lanjutkan Tugas');
     }

@@ -1216,7 +1216,31 @@
 
 .dashboard-sidebar-link.is-unavailable {
     color: #99a4b2;
-    cursor: not-allowed;
+    cursor: pointer;
+}
+
+.dashboard-sidebar-link.is-unavailable:hover {
+    color: #1857a4;
+}
+
+.dashboard-feature-toast {
+    position: fixed;
+    z-index: 1000;
+    right: 24px;
+    bottom: 24px;
+    max-width: min(420px, calc(100vw - 32px));
+    padding: 12px 16px;
+    border: 1px solid #dbe5f1;
+    border-radius: 12px;
+    background: #1e293b;
+    box-shadow: 0 12px 36px rgb(15 23 42 / 20%);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.dashboard-feature-toast[hidden] {
+    display: none;
 }
 
 .dashboard-sidebar-icon {

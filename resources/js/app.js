@@ -83,6 +83,31 @@ if (dashboardShell instanceof HTMLElement) {
     }
 }
 
+const featureToast = document.querySelector('[data-feature-toast]');
+let featureToastTimeout;
+
+document.addEventListener('click', (event) => {
+    const clickedElement = event.target instanceof Element ? event.target : null;
+    const noticeLink = clickedElement?.closest('[data-feature-notice]');
+
+    if (!(noticeLink instanceof HTMLAnchorElement)) {
+        return;
+    }
+
+    event.preventDefault();
+
+    if (!(featureToast instanceof HTMLElement)) {
+        return;
+    }
+
+    featureToast.textContent = noticeLink.dataset.featureNotice || 'Segera hadir';
+    featureToast.hidden = false;
+    window.clearTimeout(featureToastTimeout);
+    featureToastTimeout = window.setTimeout(() => {
+        featureToast.hidden = true;
+    }, 2800);
+});
+
 const dashboardDropdowns = Array.from(document.querySelectorAll('[data-dashboard-dropdown]'))
     .map((dropdown) => ({
         dropdown,
