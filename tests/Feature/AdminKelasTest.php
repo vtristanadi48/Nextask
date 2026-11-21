@@ -122,11 +122,17 @@ class AdminKelasTest extends TestCase
                 'nip' => '198601012010011002',
                 'no_hp' => '081234567891',
                 'password' => '',
+                'editing_id' => (string) $teacher->getKey(),
             ])
             ->assertRedirect(route('admin.kelas', ['tab' => 'guru']))
             ->assertSessionHasErrors([
                 'nip' => 'NIP ini sudah terdaftar pada guru lain.',
             ]);
+
+        $this->get(route('admin.kelas', ['tab' => 'guru']))
+            ->assertOk()
+            ->assertSee('data-failed-edit-id="'.$teacher->getKey().'"', false)
+            ->assertSee('Guru Diperbarui', false);
 
         $this->assertDatabaseHas('guru_profiles', [
             'user_id' => $teacher->getKey(),

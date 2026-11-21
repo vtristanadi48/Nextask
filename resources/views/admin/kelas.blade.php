@@ -284,7 +284,17 @@
     </section>
 
     <dialog class="m-auto w-[min(100%-2rem,40rem)] rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-slate-950/40" id="record-form-dialog" aria-labelledby="record-form-title">
-        <form class="flex max-h-[90vh] flex-col" method="POST" action="{{ $storeUrl }}" id="record-form" data-store-url="{{ $storeUrl }}" data-update-url="{{ $updateUrlTemplate }}">
+        <form
+            class="flex max-h-[90vh] flex-col"
+            method="POST"
+            action="{{ $storeUrl }}"
+            id="record-form"
+            data-store-url="{{ $storeUrl }}"
+            data-update-url="{{ $updateUrlTemplate }}"
+            data-tab-label="{{ $tabLabel }}"
+            data-failed-edit-id="{{ old('editing_id', '') }}"
+            data-old-values="{{ json_encode(old(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) }}"
+        >
             @csrf
             <input type="hidden" name="_method" id="record-form-method" value="">
             <input type="hidden" name="editing_id" id="record-form-editing-id" value="{{ old('editing_id') }}">
@@ -414,6 +424,7 @@
             const methodField = document.querySelector('#record-form-method');
             const editingId = document.querySelector('#record-form-editing-id');
             const updateUrlTemplate = form.dataset.updateUrl;
+            const tabLabel = form.dataset.tabLabel;
             const openForm = (button) => {
                 const recordId = button.dataset.recordId || '';
                 const record = button.dataset.record ? JSON.parse(button.dataset.record) : {};
@@ -423,7 +434,7 @@
                 methodField.value = editing ? 'PUT' : '';
                 methodField.disabled = !editing;
                 editingId.value = editing ? recordId : '';
-                formTitle.textContent = `${editing ? 'Edit' : 'Tambah'} Data {{ $tabLabel }}`;
+                formTitle.textContent = `${editing ? 'Edit' : 'Tambah'} Data ${tabLabel}`;
 
                 form.querySelectorAll('[name]').forEach((field) => {
                     if (field.name === '_token' || field.name === '_method' || field.name === 'editing_id') {
@@ -500,27 +511,35 @@
                 });
             }
 
-            @if ($errors->any() && old('editing_id'))
-                const failedEditId = @js((string) old('editing_id'));
-                const failedEditButton = [...document.querySelectorAll('[data-record-id]')]
-                    .find((button) => button.dataset.recordId === failedEditId);
-                if (failedEditButton) {
-                    const editRecord = JSON.parse(failedEditButton.dataset.record);
-                    const oldValues = @js(old());
-                    @foreach ($formFields as $field)
-                        editRecord[@js($field['name'])] = oldValues[@js($field['name'])] ?? '';
-                    @endforeach
-                    failedEditButton.dataset.record = JSON.stringify(editRecord);
-                    openForm(failedEditButton);
+            const oldValues = JSON.parse(form.dataset.oldValues || '{}');
+
+            if (Object.keys(oldValues).length > 0) {
+                const failedEditId = form.dataset.failedEditId;
+
+                if (failedEditId) {
+                    const failedEditButton = [...document.querySelectorAll('[data-record-id]')]
+                        .find((button) => button.dataset.recordId === failedEditId);
+
+                    if (failedEditButton) {
+                        const editRecord = JSON.parse(failedEditButton.dataset.record);
+                        form.querySelectorAll('[name]').forEach((field) => {
+                            if (['_token', '_method', 'editing_id'].includes(field.name)) {
+                                return;
+                            }
+
+                            editRecord[field.name] = oldValues[field.name] ?? '';
+                        });
+                        failedEditButton.dataset.record = JSON.stringify(editRecord);
+                        openForm(failedEditButton);
+                    }
+                } else {
+                    const failedCreateButton = document.querySelector('[data-open-form]:not([data-record-id])');
+                    if (failedCreateButton) {
+                        failedCreateButton.dataset.record = JSON.stringify(oldValues);
+                        openForm(failedCreateButton);
+                    }
                 }
-            @elseif ($errors->any())
-                const failedCreateButton = document.querySelector('[data-open-form]:not([data-record-id])');
-                if (failedCreateButton) {
-                    const oldValues = @js(old());
-                    failedCreateButton.dataset.record = JSON.stringify(oldValues);
-                    openForm(failedCreateButton);
-                }
-            @endif
+            }
         })();
     </script>
 @endsection
