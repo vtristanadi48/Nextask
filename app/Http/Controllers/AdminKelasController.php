@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GuruProfile;
 use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\MataPelajaran;
@@ -51,6 +52,9 @@ class AdminKelasController extends Controller
             'search' => $search,
             'records' => $this->recordsFor($tab, $search),
             'formFields' => $fields,
+            'mataPelajarans' => $tab === 'guru'
+                ? MataPelajaran::query()->orderBy('nama_mapel')->get()
+                : collect(),
         ]);
     }
 
@@ -124,6 +128,12 @@ class AdminKelasController extends Controller
      */
     private function validatedData(Request $request, string $tab, ?EloquentModel $record = null): array
     {
+        if ($tab === 'guru') {
+            $request->merge([
+                'mata_pelajaran_ids' => $request->input('mata_pelajaran_ids', []),
+            ]);
+        }
+
         $data = $request->validate($this->rulesFor($tab, $record), [
             'required' => 'Kolom :attribute wajib diisi.',
             'email' => 'Masukkan alamat email yang valid.',
@@ -137,6 +147,8 @@ class AdminKelasController extends Controller
             'nip.required' => 'NIP wajib diisi.',
             'nip.digits' => 'NIP harus terdiri dari 18 digit angka.',
             'nip.unique' => 'NIP ini sudah terdaftar pada guru lain.',
+            'mata_pelajaran_ids.*.distinct' => 'Mata pelajaran tidak boleh dipilih lebih dari sekali.',
+            'mata_pelajaran_ids.*.exists' => 'Mata pelajaran yang dipilih tidak tersedia.',
         ]);
 
         return $data;
@@ -171,6 +183,8 @@ class AdminKelasController extends Controller
                     : ['nullable', 'string', 'min:8'],
                 'nip' => ['required', 'digits:18', $profileUniqueRule ?? Rule::unique('guru_profiles', 'nip')],
                 'no_hp' => ['nullable', 'string', 'max:30'],
+                'mata_pelajaran_ids' => ['sometimes', 'array'],
+                'mata_pelajaran_ids.*' => ['required', 'integer', 'distinct', 'exists:mata_pelajarans,id'],
             ],
             'siswa' => [
                 'name' => ['required', 'string', 'max:255'],
@@ -217,7 +231,8 @@ class AdminKelasController extends Controller
         ]);
 
         if ($roleName === 'guru') {
-            $user->guruProfile()->create(Arr::only($data, ['nip', 'no_hp']));
+            $profile = $user->guruProfile()->create(Arr::only($data, ['nip', 'no_hp']));
+            $this->syncTeacherSubjects($profile, $data['mata_pelajaran_ids'] ?? []);
 
             return;
         }
@@ -240,12 +255,28 @@ class AdminKelasController extends Controller
         $record->save();
 
         if ($roleName === 'guru') {
-            $record->guruProfile()->updateOrCreate([], Arr::only($data, ['nip', 'no_hp']));
+            $profile = $record->guruProfile()->updateOrCreate([], Arr::only($data, ['nip', 'no_hp']));
+            $this->syncTeacherSubjects($profile, $data['mata_pelajaran_ids'] ?? []);
 
             return;
         }
 
         $record->siswaProfile()->updateOrCreate([], Arr::only($data, ['nisn']));
+    }
+
+    /**
+     * @param  array<int, int|string>  $subjectIds
+     */
+    private function syncTeacherSubjects(GuruProfile $profile, array $subjectIds): void
+    {
+        $profile->kelasMapels()->whereNull('kelas_id')->delete();
+
+        foreach ($subjectIds as $subjectId) {
+            $profile->kelasMapels()->create([
+                'kelas_id' => null,
+                'mata_pelajaran_id' => $subjectId,
+            ]);
+        }
     }
 
     private function findRecord(string $tab, int $id): EloquentModel
@@ -328,6 +359,7 @@ class AdminKelasController extends Controller
                 ['name' => 'email', 'label' => 'Email', 'type' => 'email', 'required' => true],
                 ['name' => 'nip', 'label' => 'NIP', 'type' => 'text', 'required' => true, 'placeholder' => '18 digit NIP'],
                 ['name' => 'no_hp', 'label' => 'No. HP', 'type' => 'tel'],
+                ['name' => 'mata_pelajaran_ids', 'label' => 'Mata Pelajaran yang Diampu', 'type' => 'checkboxes'],
                 ['name' => 'password', 'label' => 'Kata Sandi', 'type' => 'password', 'required' => true],
             ],
             'siswa' => [

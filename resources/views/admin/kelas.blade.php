@@ -133,6 +133,11 @@
                                         'email' => $record->email,
                                         'nip' => $record->guruProfile?->nip,
                                         'no_hp' => $record->guruProfile?->no_hp,
+                                        'mata_pelajaran_ids' => $record->guruProfile?->kelasMapels
+                                            ?->whereNull('kelas_id')
+                                            ?->pluck('mata_pelajaran_id')
+                                            ?->values()
+                                            ?->all() ?? [],
                                         'password' => '',
                                     ],
                                     'siswa' => [
@@ -312,45 +317,88 @@
             <div class="grid gap-4 overflow-y-auto px-5 py-5 sm:grid-cols-2 sm:px-6">
                 @foreach ($formFields as $field)
                     @php
-                        $isFullWidth = $field['type'] === 'password' || $field['name'] === 'nama_kelas';
+                        $isFullWidth = $field['type'] === 'password'
+                            || $field['type'] === 'checkboxes'
+                            || $field['name'] === 'nama_kelas';
                         $isPassword = $field['type'] === 'password';
                     @endphp
                     <div class="flex flex-col gap-1.5 {{ $isFullWidth ? 'sm:col-span-2' : '' }}">
-                        <label class="text-sm font-semibold text-slate-700" for="field-{{ $field['name'] }}">
-                            {{ $field['label'] }}
-                            @if ($field['required'] ?? false)
-                                <span class="text-rose-600" data-required-marker>*</span>
+                        @if ($field['type'] === 'checkboxes')
+                            <p class="text-sm font-semibold text-slate-700" id="field-label-{{ $field['name'] }}">{{ $field['label'] }}</p>
+                            <p class="text-xs text-slate-500">Opsional. Centang satu atau beberapa mata pelajaran yang akan diajarkan.</p>
+                            @if ($mataPelajarans->isEmpty())
+                                <p class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                                    Belum ada mata pelajaran tersedia. Tambahkan mata pelajaran melalui menu Mata Pelajaran terlebih dahulu.
+                                </p>
+                            @else
+                                <input
+                                    class="rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                                    id="field-{{ $field['name'] }}"
+                                    type="search"
+                                    placeholder="Cari mata pelajaran..."
+                                    aria-label="Cari mata pelajaran"
+                                    autocomplete="off"
+                                    data-subject-search
+                                >
+                                <div class="grid max-h-52 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 sm:grid-cols-2" role="group" aria-labelledby="field-label-{{ $field['name'] }}">
+                                    @foreach ($mataPelajarans as $mataPelajaran)
+                                        <label class="flex cursor-pointer items-start gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-blue-50" data-subject-option>
+                                            <input
+                                                class="mt-0.5 size-4 rounded border-slate-300 text-blue-700 focus:ring-blue-500"
+                                                type="checkbox"
+                                                name="mata_pelajaran_ids[]"
+                                                value="{{ $mataPelajaran->getKey() }}"
+                                                data-subject-checkbox
+                                            >
+                                            <span>{{ $mataPelajaran->nama_mapel }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <p class="text-xs text-slate-500" data-subject-no-results hidden>Tidak ada mata pelajaran yang cocok.</p>
                             @endif
-                        </label>
-                        @if ($field['type'] === 'select')
-                            <select
-                                class="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                                id="field-{{ $field['name'] }}"
-                                name="{{ $field['name'] }}"
-                                @if ($field['required'] ?? false) required @endif
-                            >
-                                <option value="">Pilih {{ strtolower($field['label']) }}</option>
-                                @foreach ($field['options'] ?? [] as $optionValue => $optionLabel)
-                                    <option value="{{ $optionValue }}" @selected((string) old($field['name']) === (string) $optionValue)>{{ $optionLabel }}</option>
-                                @endforeach
-                            </select>
+                            <p class="text-xs font-medium text-slate-600" aria-live="polite" data-subject-count>0 mata pelajaran dipilih.</p>
+                            @foreach ($errors->get('mata_pelajaran_ids.*') as $message)
+                                <p class="text-xs font-medium text-rose-600">{{ $message }}</p>
+                            @endforeach
                         @else
-                            <input
-                                class="rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                                id="field-{{ $field['name'] }}"
-                                type="{{ $field['type'] }}"
-                                name="{{ $field['name'] }}"
-                                value="{{ $isPassword ? '' : old($field['name']) }}"
-                                placeholder="{{ $field['placeholder'] ?? 'Masukkan '.$field['label'] }}"
-                                @if ($field['name'] === 'nisn') inputmode="numeric" maxlength="10" @endif
-                                @if ($field['name'] === 'nip') inputmode="numeric" minlength="18" maxlength="18" @endif
-                                @if ($field['required'] ?? false) required @endif
-                                @if ($isPassword) autocomplete="new-password" @endif
-                            >
+                            <label class="text-sm font-semibold text-slate-700" for="field-{{ $field['name'] }}">
+                                {{ $field['label'] }}
+                                @if ($field['required'] ?? false)
+                                    <span class="text-rose-600" data-required-marker>*</span>
+                                @endif
+                            </label>
                         @endif
-                        @error($field['name'])
-                            <p class="text-xs font-medium text-rose-600">{{ $message }}</p>
-                        @enderror
+                        @if ($field['type'] !== 'checkboxes')
+                            @if ($field['type'] === 'select')
+                                <select
+                                    class="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                                    id="field-{{ $field['name'] }}"
+                                    name="{{ $field['name'] }}"
+                                    @if ($field['required'] ?? false) required @endif
+                                >
+                                    <option value="">Pilih {{ strtolower($field['label']) }}</option>
+                                    @foreach ($field['options'] ?? [] as $optionValue => $optionLabel)
+                                        <option value="{{ $optionValue }}" @selected((string) old($field['name']) === (string) $optionValue)>{{ $optionLabel }}</option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input
+                                    class="rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                                    id="field-{{ $field['name'] }}"
+                                    type="{{ $field['type'] }}"
+                                    name="{{ $field['name'] }}"
+                                    value="{{ $isPassword ? '' : old($field['name']) }}"
+                                    placeholder="{{ $field['placeholder'] ?? 'Masukkan '.$field['label'] }}"
+                                    @if ($field['name'] === 'nisn') inputmode="numeric" maxlength="10" @endif
+                                    @if ($field['name'] === 'nip') inputmode="numeric" minlength="18" maxlength="18" @endif
+                                    @if ($field['required'] ?? false) required @endif
+                                    @if ($isPassword) autocomplete="new-password" @endif
+                                >
+                            @endif
+                            @error($field['name'])
+                                <p class="text-xs font-medium text-rose-600">{{ $message }}</p>
+                            @enderror
+                        @endif
                     </div>
                 @endforeach
             </div>
@@ -441,12 +489,26 @@
                         return;
                     }
 
+                    if (field.type === 'checkbox') {
+                        return;
+                    }
+
                     field.value = record[field.name] ?? '';
 
                     if (field.name === 'password') {
                         field.required = !editing;
                     }
                 });
+
+                const selectedSubjectIds = new Set((record.mata_pelajaran_ids || []).map(String));
+                form.querySelectorAll('[data-subject-checkbox]').forEach((checkbox) => {
+                    checkbox.checked = selectedSubjectIds.has(checkbox.value);
+                });
+                updateSubjectCount();
+                if (subjectSearch) {
+                    subjectSearch.value = '';
+                    subjectSearch.dispatchEvent(new Event('input'));
+                }
 
                 form.querySelectorAll('[data-required-marker]').forEach((marker) => {
                     marker.hidden = editing && marker.closest('label').htmlFor === 'field-password';
@@ -470,6 +532,37 @@
                     }
                 });
             });
+
+            const updateSubjectCount = () => {
+                const count = form.querySelector('[data-subject-count]');
+                if (count) {
+                    count.textContent = `${form.querySelectorAll('[data-subject-checkbox]:checked').length} mata pelajaran dipilih.`;
+                }
+            };
+
+            form.querySelectorAll('[data-subject-checkbox]').forEach((checkbox) => {
+                checkbox.addEventListener('change', updateSubjectCount);
+            });
+
+            const subjectSearch = form.querySelector('[data-subject-search]');
+            if (subjectSearch) {
+                subjectSearch.addEventListener('input', () => {
+                    const query = subjectSearch.value.trim().toLocaleLowerCase();
+                    let visibleCount = 0;
+
+                    form.querySelectorAll('[data-subject-option]').forEach((option) => {
+                        const matches = option.textContent.toLocaleLowerCase().includes(query);
+                        option.hidden = !matches;
+                        option.classList.toggle('hidden', !matches);
+                        visibleCount += Number(matches);
+                    });
+
+                    const noResults = form.querySelector('[data-subject-no-results]');
+                    if (noResults) {
+                        noResults.hidden = visibleCount > 0;
+                    }
+                });
+            }
 
             const detailDialog = document.querySelector('#teacher-detail-dialog');
             if (detailDialog) {
@@ -501,7 +594,7 @@
                             detail.assignments.forEach((assignment) => {
                                 const row = document.createElement('p');
                                 row.className = 'rounded-xl border border-slate-100 px-4 py-3 text-sm text-slate-700';
-                                row.textContent = `${assignment.kelas || 'Kelas belum tersedia'} · ${assignment.mapel || 'Mapel belum tersedia'}`;
+                                row.textContent = `${assignment.kelas || 'Umum'} · ${assignment.mapel || 'Mapel belum tersedia'}`;
                                 assignments.append(row);
                             });
                         }
@@ -527,8 +620,13 @@
                                 return;
                             }
 
+                            if (field.type === 'checkbox') {
+                                return;
+                            }
+
                             editRecord[field.name] = oldValues[field.name] ?? '';
                         });
+                        editRecord.mata_pelajaran_ids = oldValues.mata_pelajaran_ids ?? [];
                         failedEditButton.dataset.record = JSON.stringify(editRecord);
                         openForm(failedEditButton);
                     }

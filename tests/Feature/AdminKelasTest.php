@@ -63,6 +63,18 @@ class AdminKelasTest extends TestCase
     public function test_admin_can_create_update_and_delete_a_teacher_account_with_its_profile(): void
     {
         $admin = User::factory()->withRole('admin')->create();
+        $math = MataPelajaran::query()->create([
+            'kode_mapel' => 'MTK',
+            'nama_mapel' => 'Matematika',
+        ]);
+        $english = MataPelajaran::query()->create([
+            'kode_mapel' => 'BING',
+            'nama_mapel' => 'Bahasa Inggris',
+        ]);
+        $class = Kelas::query()->create([
+            'nama_kelas' => 'X RPL Mapel',
+            'tingkat' => 'X',
+        ]);
 
         $this->actingAs($admin)
             ->post(route('admin.kelas.store', ['tab' => 'guru']), [
@@ -71,6 +83,7 @@ class AdminKelasTest extends TestCase
                 'nip' => '198501012010011001',
                 'no_hp' => '081234567890',
                 'password' => 'secret-password',
+                'mata_pelajaran_ids' => [$math->getKey(), $english->getKey()],
             ])
             ->assertRedirect(route('admin.kelas', ['tab' => 'guru']))
             ->assertSessionHasNoErrors();
@@ -82,6 +95,22 @@ class AdminKelasTest extends TestCase
             'nip' => '198501012010011001',
             'no_hp' => '081234567890',
         ]);
+        $profile = $teacher->guruProfile()->firstOrFail();
+        $this->assertDatabaseHas('guru_kelas_mapels', [
+            'guru_profile_id' => $profile->getKey(),
+            'kelas_id' => null,
+            'mata_pelajaran_id' => $math->getKey(),
+        ]);
+        $this->assertDatabaseHas('guru_kelas_mapels', [
+            'guru_profile_id' => $profile->getKey(),
+            'kelas_id' => null,
+            'mata_pelajaran_id' => $english->getKey(),
+        ]);
+        GuruKelasMapel::query()->create([
+            'guru_profile_id' => $profile->getKey(),
+            'kelas_id' => $class->getKey(),
+            'mata_pelajaran_id' => $math->getKey(),
+        ]);
 
         $this->put(route('admin.kelas.update', ['tab' => 'guru', 'id' => $teacher->getKey()]), [
             'name' => 'Guru Diperbarui',
@@ -89,6 +118,7 @@ class AdminKelasTest extends TestCase
             'nip' => '198501012010011001',
             'no_hp' => '081234567891',
             'password' => '',
+            'mata_pelajaran_ids' => [$english->getKey()],
         ])
             ->assertRedirect(route('admin.kelas', ['tab' => 'guru']))
             ->assertSessionHasNoErrors();
@@ -100,6 +130,21 @@ class AdminKelasTest extends TestCase
         $this->assertDatabaseHas('guru_profiles', [
             'user_id' => $teacher->getKey(),
             'nip' => '198501012010011001',
+        ]);
+        $this->assertDatabaseMissing('guru_kelas_mapels', [
+            'guru_profile_id' => $profile->getKey(),
+            'kelas_id' => null,
+            'mata_pelajaran_id' => $math->getKey(),
+        ]);
+        $this->assertDatabaseHas('guru_kelas_mapels', [
+            'guru_profile_id' => $profile->getKey(),
+            'kelas_id' => null,
+            'mata_pelajaran_id' => $english->getKey(),
+        ]);
+        $this->assertDatabaseHas('guru_kelas_mapels', [
+            'guru_profile_id' => $profile->getKey(),
+            'kelas_id' => $class->getKey(),
+            'mata_pelajaran_id' => $math->getKey(),
         ]);
 
         $this->get(route('admin.kelas', ['tab' => 'guru']))
@@ -144,6 +189,92 @@ class AdminKelasTest extends TestCase
 
         $this->assertDatabaseMissing('users', ['id' => $teacher->getKey()]);
         $this->assertDatabaseMissing('guru_profiles', ['user_id' => $teacher->getKey()]);
+    }
+
+    public function test_teacher_account_rejects_subject_ids_not_in_the_database(): void
+    {
+        $admin = User::factory()->withRole('admin')->create();
+
+        $this->actingAs($admin)
+            ->from(route('admin.kelas', ['tab' => 'guru']))
+            ->post(route('admin.kelas.store', ['tab' => 'guru']), [
+                'name' => 'Guru Mapel Tidak Valid',
+                'email' => 'invalid.subject@example.test',
+                'nip' => '198501012010011001',
+                'password' => 'secret-password',
+                'mata_pelajaran_ids' => [999999],
+            ])
+            ->assertRedirect(route('admin.kelas', ['tab' => 'guru']))
+            ->assertSessionHasErrors([
+                'mata_pelajaran_ids.0' => 'Mata pelajaran yang dipilih tidak tersedia.',
+            ]);
+
+        $this->assertDatabaseMissing('users', ['email' => 'invalid.subject@example.test']);
+    }
+
+    public function test_teacher_account_rejects_duplicate_subject_ids(): void
+    {
+        $admin = User::factory()->withRole('admin')->create();
+        $subject = MataPelajaran::query()->create([
+            'kode_mapel' => 'MTK',
+            'nama_mapel' => 'Matematika',
+        ]);
+
+        $this->actingAs($admin)
+            ->from(route('admin.kelas', ['tab' => 'guru']))
+            ->post(route('admin.kelas.store', ['tab' => 'guru']), [
+                'name' => 'Guru Mapel Duplikat',
+                'email' => 'duplicate.subject@example.test',
+                'nip' => '198501012010011001',
+                'password' => 'secret-password',
+                'mata_pelajaran_ids' => [$subject->getKey(), $subject->getKey()],
+            ])
+            ->assertRedirect(route('admin.kelas', ['tab' => 'guru']))
+            ->assertSessionHasErrors([
+                'mata_pelajaran_ids.1' => 'Mata pelajaran tidak boleh dipilih lebih dari sekali.',
+            ]);
+
+        $this->assertDatabaseMissing('users', ['email' => 'duplicate.subject@example.test']);
+    }
+
+    public function test_teacher_form_lists_database_subjects_and_explains_when_none_exist(): void
+    {
+        $admin = User::factory()->withRole('admin')->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.kelas', ['tab' => 'guru']))
+            ->assertOk()
+            ->assertSee('Belum ada mata pelajaran tersedia.');
+
+        MataPelajaran::query()->create([
+            'kode_mapel' => 'MTK',
+            'nama_mapel' => 'Matematika dari database',
+        ]);
+
+        $this->get(route('admin.kelas', ['tab' => 'guru']))
+            ->assertOk()
+            ->assertSee('Matematika dari database')
+            ->assertSee('data-subject-search', false)
+            ->assertSee('name="mata_pelajaran_ids[]"', false);
+    }
+
+    public function test_teacher_account_can_be_created_without_subject_assignments(): void
+    {
+        $admin = User::factory()->withRole('admin')->create();
+
+        $this->actingAs($admin)
+            ->post(route('admin.kelas.store', ['tab' => 'guru']), [
+                'name' => 'Guru Tanpa Mapel',
+                'email' => 'teacher.without.subjects@example.test',
+                'nip' => '198501012010011001',
+                'password' => 'secret-password',
+            ])
+            ->assertRedirect(route('admin.kelas', ['tab' => 'guru']))
+            ->assertSessionHasNoErrors();
+
+        $teacher = User::query()->where('email', 'teacher.without.subjects@example.test')->firstOrFail();
+        $this->assertModelExists($teacher->guruProfile()->firstOrFail());
+        $this->assertDatabaseCount('guru_kelas_mapels', 0);
     }
 
     public function test_teacher_account_requires_an_eighteen_digit_nip(): void
