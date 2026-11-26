@@ -1,25 +1,5 @@
 //
 
-const onboardingForm = document.querySelector('[data-onboarding-form]');
-
-if (onboardingForm instanceof HTMLFormElement) {
-    const roleWarning = onboardingForm.querySelector('[data-role-warning]');
-
-    onboardingForm.querySelectorAll('input[name="role"]').forEach((roleInput) => {
-        roleInput.addEventListener('invalid', () => {
-            if (roleWarning instanceof HTMLElement) {
-                roleWarning.hidden = false;
-            }
-        });
-
-        roleInput.addEventListener('change', () => {
-            if (roleWarning instanceof HTMLElement) {
-                roleWarning.hidden = true;
-            }
-        });
-    });
-}
-
 document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
     if (!(toggle instanceof HTMLButtonElement)) {
         return;

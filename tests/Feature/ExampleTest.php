@@ -10,32 +10,9 @@ class ExampleTest extends TestCase
     /**
      * A basic test example.
      */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_the_homepage_redirects_to_login(): void
     {
-        $this->withoutVite();
-
-        $response = $this->get('/');
-
-        $response->assertStatus(200);
-    }
-
-    public function test_the_onboarding_page_offers_student_and_teacher_roles(): void
-    {
-        $this->withoutVite();
-
-        $response = $this->get('/');
-
-        $response
-            ->assertViewIs('pages.onboarding')
-            ->assertSee('Siswa')
-            ->assertSee('Guru')
-            ->assertSee('action="'.route('login').'"', false)
-            ->assertSee('method="GET"', false)
-            ->assertSee('name="role"', false)
-            ->assertSee('required', false)
-            ->assertSee('Pilih peran Siswa atau Guru terlebih dahulu.')
-            ->assertSee('Mulai Sekarang')
-            ->assertDontSee('disabled>Mulai Sekarang', false);
+        $this->get('/')->assertRedirect(route('login'));
     }
 
     public function test_a_user_can_open_the_login_form(): void
@@ -53,6 +30,7 @@ class ExampleTest extends TestCase
             ->assertSee('method="POST"', false)
             ->assertSee('action="'.route('login.post').'"', false)
             ->assertSee('Masuk ke Akun')
+            ->assertDontSee('Kembali ke pilihan peran')
             ->assertDontSee('name="nisn"', false)
             ->assertDontSee('name="login_role"', false);
     }

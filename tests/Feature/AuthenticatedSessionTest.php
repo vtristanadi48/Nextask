@@ -193,6 +193,20 @@ class AuthenticatedSessionTest extends TestCase
         }
     }
 
+    public function test_authenticated_users_reach_their_dashboard_from_the_homepage(): void
+    {
+        foreach (self::roleDashboardRoutes() as [$roleName, $dashboardRoute]) {
+            $user = User::factory()->withRole($roleName)->create();
+
+            $this->actingAs($user)
+                ->get('/')
+                ->assertRedirect(route('login'));
+
+            $this->get(route('login'))
+                ->assertRedirect(route($dashboardRoute));
+        }
+    }
+
     public function test_dashboard_redirects_guests_to_login(): void
     {
         $this->get(route('siswa.dashboard'))

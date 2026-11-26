@@ -5,9 +5,7 @@ use App\Http\Controllers\AdminKelasController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('pages.onboarding');
-})->name('onboarding');
+Route::get('/', fn () => redirect()->route('login'))->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');

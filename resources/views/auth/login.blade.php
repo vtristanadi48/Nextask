@@ -10,7 +10,7 @@
     <body class="login-page font-sans antialiased">
         <main class="login-layout">
             <section class="login-brand-panel" aria-label="Tentang Nextask">
-                <a class="login-brand" href="{{ route('onboarding') }}" aria-label="Nextask, pilih peran">
+                <a class="login-brand" href="{{ route('login') }}" aria-label="Nextask, masuk">
                     <img class="login-brand-logo" src="{{ asset('images/brand/logo-teks-kanan.svg') }}" alt="">
                     <span>Nextask</span>
                 </a>
@@ -31,7 +31,7 @@
 
             <section class="login-form-panel" aria-labelledby="login-title">
                 <div class="login-form-content">
-                    <a class="login-mobile-brand" href="{{ route('onboarding') }}" aria-label="Nextask, pilih peran">
+                    <a class="login-mobile-brand" href="{{ route('login') }}" aria-label="Nextask, masuk">
                         <span class="login-mobile-mark" aria-hidden="true">
                             <img src="{{ asset('images/brand/logo.svg') }}" alt="">
                         </span>
@@ -101,10 +101,6 @@
 
                         <button class="login-submit" type="submit">Masuk ke Akun</button>
                     </form>
-
-                    <p class="login-switch-role">
-                        <a href="{{ route('onboarding') }}">Kembali ke pilihan peran</a>
-                    </p>
                 </div>
             </section>
         </main>
