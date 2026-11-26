@@ -38,6 +38,9 @@ class AuthenticatedSessionTest extends TestCase
             'password' => 'secret-password',
         ]);
 
+        $this->get(route('home'))
+            ->assertRedirect(route('login'));
+
         $this->post(route('login.post'), [
             'email' => $user->email,
             'password' => 'secret-password',
@@ -116,20 +119,15 @@ class AuthenticatedSessionTest extends TestCase
             ->assertDontSee('student.oldest@example.test');
     }
 
-    public function test_admin_quick_actions_display_a_safe_coming_soon_notice(): void
+    public function test_admin_dashboard_does_not_render_quick_actions(): void
     {
         $admin = User::factory()->withRole('admin')->create();
 
         $this->actingAs($admin)
             ->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('Kelola Master Data (Kelas)')
-            ->assertSee('Tambah guru, siswa, mapel & jurusan')
-            ->assertSee('Pengaturan Akademik')
-            ->assertSee('Data Administrasi')
-            ->assertSee('href="'.route('admin.kelas').'"', false)
-            ->assertSee('href="#"', false)
-            ->assertSee('data-feature-notice="Segera hadir"', false);
+            ->assertDontSee('Aksi Cepat')
+            ->assertDontSee('Kelola Master Data (Kelas)');
     }
 
     public function test_role_middleware_forbids_access_to_another_roles_dashboard(): void
